@@ -1,0 +1,16 @@
+# set the following paths according to your system
+
+android {
+# To build for android you need OSGEO4A
+# e.g /home/bob/OSGeo4A
+    OSGEO4A_DIR = [insert path here]/OSGeo4A 
+    OSGEO4A_STAGE_DIR = $${OSGEO4A_DIR}/stage
+    QGIS_INSTALL_PATH = $${OSGEO4A_STAGE_DIR}/$$ANDROID_TARGET_ARCH
+}
+!android {
+# To build for desktop you need installed QGIS (with headers, etc)
+# e.g /home/bob/apps
+    QGIS_INSTALL_PATH = [insert path here]/apps
+    QGIS_QUICK_DATA_PATH = [insert absolute path to this directory here]/android/assets/qgis-data
+}
+
