@@ -22,7 +22,7 @@ ApplicationWindow {
     id: window
     visible: true
     visibility: "Maximized"
-    title: qsTr("qgis-quick-demo-app")
+    title: qsTr("QGIS Quick Demo App")
 
     Component.onCompleted: {
         console.log("Completed Running!")
@@ -76,7 +76,7 @@ ApplicationWindow {
             mapSettings: mapCanvas.mapSettings
         }
 
-        QgsQuick.FeatureModelHighlight {
+        QgsQuick.FeatureHighlight {
             color: "red"
             width: 20
             model: featurePanel.visible ? featurePanel.currentFeatureModel : null
@@ -94,7 +94,7 @@ ApplicationWindow {
           interactive: true
           dragMargin: 0 // prevents opening the drawer by dragging.
           height: window.height
-          width: QgsQuick.Style.dp * 1000
+          width: QgsQuick.Utils.dp * 1000
           edge: Qt.RightEdge
           z: 2   // make sure items from here are on top of the Z-order
 
@@ -117,20 +117,19 @@ ApplicationWindow {
         simulatePositionLongLatRad: __use_simulated_position ? [-97.36, 36.93, 2] : undefined
     }
 
-    ScaleBar {
+    QgsQuick.ScaleBar {
         id: scaleBar
         y: window.height - height
         height: 50
         mapSettings: mapCanvas.mapSettings
-        preferredWidth: 115 * QgsQuick.Style.dp
+        preferredWidth: 115 * QgsQuick.Utils.dp
         z: 1
     }
-
 
     FeaturePanel {
         id: featurePanel
         height: window.height
-        width: QgsQuick.Style.dp * 1000
+        width: QgsQuick.Utils.dp * 1000
         edge: Qt.RightEdge
         mapSettings: mapCanvas.mapSettings
         project: __project

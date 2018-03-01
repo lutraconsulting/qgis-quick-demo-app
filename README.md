@@ -2,6 +2,32 @@
 Android GIS application with usage of QgsQuick 
 
 
+# Building on Linux
+
+## Build QGIS with Quick Library
+
+1. check out `qgis-quick-library` branch from Peter Petrik's QGIS repository: https://github.com/PeterPetrik/QGIS
+
+   (hopefully soon the branch will be merged to QGIS master)
+
+2. configure and compile QGIS with Quick library - this will install the libs to `/home/bob/apps`:
+
+   ```
+   mkdir build
+   cd build
+   cmake -G Ninja -DWITH_QUICK=TRUE -DWITH_GUI=FALSE -DWITH_DESKTOP=FALSE -DCMAKE_PREFIX_PATH=/home/bob/apps ..
+   ninja install
+   ```
+
+## Build the Demo App
+
+1. check out this repository
+2. copy `config.pri.default` to `config.pri`
+3. adjust paths in `config.pri`
+4. open `qgis-quick-demo-app.pro` in Qt Creator
+5. build and run the application in Qt Creator
+
+
 # Building on Android
 
 TODO: verify this is still correct

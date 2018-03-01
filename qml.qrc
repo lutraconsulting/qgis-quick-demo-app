@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>ScaleBar.qml</file>
         <file>FeaturePanel.qml</file>
     </qresource>
 </RCC>

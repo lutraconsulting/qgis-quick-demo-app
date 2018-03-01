@@ -40,7 +40,7 @@
 #include "qgsmaplayer.h"
 #include "qgslayertreegroup.h"
 #include "qgslayertree.h"
-#include <qgsmessagelog.h>
+#include "qgsmessagelog.h"
 #include "qgsquickutils.h"
 
 static void init_qgis()
@@ -128,14 +128,6 @@ static void init_qgis()
   qDebug( "qgis_init %f [s]", t.elapsed() / 1000.0 );
 }
 
-float calculateDevicePixels()
-{
-  int dpiX = QApplication::desktop()->physicalDpiX();
-  int dpiY = QApplication::desktop()->physicalDpiY();
-  int dpi = dpiX < dpiY ? dpiX : dpiY; // In case of asymetrical DPI. Improbable
-  float dp = dpi * 0.00768443;
-  return dp;
-}
 
 int main( int argc, char *argv[] )
 {
@@ -144,7 +136,11 @@ int main( int argc, char *argv[] )
   init_qgis();
   qDebug( "QGIS_PREFIX_PATH: %s", ::getenv( "QGIS_PREFIX_PATH" ) );
 
-  QQmlEngine engine;
+  // Set up the QSettings environment must be done after qapp is created
+  QCoreApplication::setOrganizationName( "QGIS" );
+  QCoreApplication::setOrganizationDomain( "qgis.org" );
+  QCoreApplication::setApplicationName( "QGIS Quick Demo App" );
+  QCoreApplication::setApplicationVersion( "1.0" );
 
   // 2) Load QGIS Project
 #ifdef QGIS_QUICK_DATA_PATH
@@ -158,28 +154,10 @@ int main( int argc, char *argv[] )
   bool res = project.read( projectFile );
   Q_ASSERT( res );
 
+  QQmlEngine engine;
+  engine.addImportPath( QgsApplication::qmlImportPath() );
   engine.rootContext()->setContextProperty( "__project", &project );
-
-  // 3) Load project's layers
-  QgsLayerTreeGroup *root = project.layerTreeRoot();
-  QList<QgsMapLayer *> layers;
-  foreach ( QgsLayerTreeLayer *nodeLayer, root->findLayers() )
-  {
-    if ( nodeLayer->isVisible() )
-    {
-      QgsMapLayer *layer = nodeLayer->layer();
-      if ( layer->isValid() )
-      {
-        layers << layer;
-        qDebug() << "Found layer: " << layer->name();
-      }
-    }
-  }
-  engine.rootContext()->setContextProperty( "__layers", QVariant::fromValue( layers ) );
-
-  // Set Device Pixels
-  float dp = calculateDevicePixels();
-  QgsQuickUtils::instance()->setProperty( "dp", dp );
+  engine.rootContext()->setContextProperty( "__layers", QVariant::fromValue( project.layerTreeRoot()->layerOrder() ) );
 
   // Set simulated position for desktop builds
 #ifndef ANDROID
@@ -213,25 +191,14 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
-  // Set up the QSettings environment must be done after qapp is created
-  QCoreApplication::setOrganizationName( "QGIS" );
-  QCoreApplication::setOrganizationDomain( "qgis.org" );
-  QCoreApplication::setApplicationName( "QgsQuick Test App" );
-  QCoreApplication::setApplicationVersion( Qgis::QGIS_VERSION );
-
 #ifndef ANDROID
   QCommandLineParser parser;
   parser.addVersionOption();
   parser.process( app );
 #endif
 
-  // Add some data for debugging if needed (visible in the final customer app)
-  QRect rec = QApplication::desktop()->screenGeometry();
-  int height = rec.height();
-  int width = rec.width();
-  QgsApplication::messageLog()->logMessage( "screen: " + QString::number( width ) + "x" + QString::number( height ) );
-  QgsApplication::messageLog()->logMessage( "device pixels: " + QString::number( dp ) );
-  QgsApplication::messageLog()->logMessage( "data directory: " + dataDir );
+  // Add some data for debugging if needed
+  QgsApplication::messageLog()->logMessage( QgsQuickUtils::instance()->dumpScreenInfo() );
   QgsApplication::messageLog()->logMessage( "All up and running" );
 
   return app.exec();
