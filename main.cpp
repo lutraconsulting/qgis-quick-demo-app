@@ -198,8 +198,11 @@ int main( int argc, char *argv[] )
 #endif
 
   // Add some data for debugging if needed
-  QgsApplication::messageLog()->logMessage( QgsQuickUtils::instance()->dumpScreenInfo() );
-  QgsApplication::messageLog()->logMessage( "All up and running" );
+  // Add some data for debugging if needed (visible in the final customer app)
+  QgsApplication::messageLog()->logMessage(QgsQuickUtils().dumpScreenInfo());
+  QgsApplication::messageLog()->logMessage("data directory: " + dataDir);
+  QgsApplication::messageLog()->logMessage("All up and running");
+
 
   return app.exec();
 }

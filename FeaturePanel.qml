@@ -15,7 +15,7 @@
 
 import QtQuick 2.7
 import QtQuick.Controls 2.2
-import QgisQuick 0.1 as QgsQuick
+import QgsQuick 0.1 as QgsQuick
 
 Drawer {
 
@@ -23,9 +23,8 @@ Drawer {
     property var project
 
     property alias state: featureForm.state
-    property alias layer: featureModel.layer
-    property alias feature: featureModel.feature
-    property alias currentFeatureModel: featureModel
+    property alias feature: attributeModel.featureLayerPair
+    property alias currentAttributeModel: attributeModel
 
     id: featurePanel
     visible: false
@@ -34,23 +33,14 @@ Drawer {
     dragMargin: 0 // prevents opening the drawer by dragging.
 
     background: Rectangle {
-        color: "white"
-        opacity: 0.5
+        color: 'grey'
+        opacity: 0.8
     }
 
-    function show_panel(layer, feature, state) {
-        if (QgsQuick.Utils.hasValidGeometry(layer, feature)) {
-            // layer needs to be set before the feature otherwise the panel ends up empty on layer change
-            featurePanel.layer = layer
-            featurePanel.feature = feature
-            featurePanel.state = state
-
-            // visible needs to be after setting correct layer&feature,
-            // so currentFeatureModel is already up to date (required for feature highlight)
-            featurePanel.visible = true
-        } else {
-            QgsQuick.Utils.logMessage("The feature " + layer.name + " has a wrong geometry." , "YDNPA Surveys")
-        }
+    function show_panel(feature, state) {
+      featurePanel.feature = feature
+      featurePanel.state = state
+      featurePanel.visible = true
     }
 
     QgsQuick.FeatureForm {
@@ -61,8 +51,8 @@ Drawer {
       height: featurePanel.height
 
       model: QgsQuick.AttributeFormModel {
-        featureModel: QgsQuick.FeatureModel {
-            id: featureModel
+        attributeModel: QgsQuick.AttributeModel {
+            id: attributeModel
         }
       }
 
@@ -73,7 +63,7 @@ Drawer {
       onSaved: {
         featurePanel.visible = false
       }
-      onCancelled: featurePanel.visible = false
+      onCanceled: featurePanel.visible = false
     }
 
 }
