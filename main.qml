@@ -15,7 +15,7 @@
 
 import QtQuick 2.7
 import QtQuick.Controls 2.2
-import QgisQuick 0.1 as QgsQuick
+import QgsQuick 0.1 as QgsQuick
 import "."
 
 ApplicationWindow {
@@ -53,37 +53,30 @@ ApplicationWindow {
         mapSettings.layers: __layers
 
         QgsQuick.IdentifyKit {
-            id: identifyKit
-            mapSettings: mapCanvas.mapSettings
+          id: identifyKit
+          mapSettings: mapCanvas.mapSettings
+          identifyMode: QgsQuick.IdentifyKit.TopDownAll
         }
 
         onClicked: {
-            var screenPoint = Qt.point( mouse.x, mouse.y );
-            var res = identifyKit.identifyOne(screenPoint);
-            if (res.valid)
-            {
-              featurePanel.show_panel(
-                          res.layer,
-                          res.feature,
-                          "Edit" )
-            }
+          mapCanvas.forceActiveFocus()
+          var screenPoint = Qt.point( mouse.x, mouse.y );
+
+          var res = identifyKit.identifyOne(screenPoint);
+          highlight.featureLayerPair = res
+          if (res.valid) {
+            featurePanel.show_panel(res, "ReadOnly" )
+          }
         }
     }
 
-    Item {
-        anchors.fill: mapCanvas
-        transform: QgsQuick.MapTransform {
-            mapSettings: mapCanvas.mapSettings
-        }
 
-        QgsQuick.FeatureHighlight {
-            color: "red"
-            width: 20
-            model: featurePanel.visible ? featurePanel.currentFeatureModel : null
-            mapSettings: mapCanvas.mapSettings
-        }
-
-        z: 1   // make sure items from here are on top of the Z-order
+    QgsQuick.FeatureHighlight {
+      anchors.fill: mapCanvas
+      id: highlight
+      color: "red"
+      mapSettings: mapCanvas.mapSettings
+      z: 1
     }
 
 
@@ -111,11 +104,19 @@ ApplicationWindow {
           }
       }
 
-    QgsQuick.PositionMarker {
-        id: positionMarker
+    QgsQuick.PositionKit {
+        id: positionKit
         mapSettings: mapCanvas.mapSettings
-        simulatePositionLongLatRad: __use_simulated_position ? [-97.36, 36.93, 2] : undefined
+        simulatePositionLongLatRad: __use_simulated_position ? [-2.9207148, 51.3624998, 0.05] : []
     }
+
+    QgsQuick.PositionMarker {
+      id: positionMarker
+      positionKit: positionKit
+      visible:!!positionKit.screenPosition.x
+      z: 1
+    }
+
 
     QgsQuick.ScaleBar {
         id: scaleBar

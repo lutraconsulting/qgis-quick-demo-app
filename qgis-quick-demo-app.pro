@@ -1,40 +1,80 @@
 TEMPLATE = app
 
 include(config.pri)
-QT_LIBS_DIR = $$dirname(QMAKE_QMAKE)/../lib
-QGIS_QML_DIR = $${QGIS_INSTALL_PATH}/qml
-QGIS_LIB_DIR = $${QGIS_INSTALL_PATH}/lib
-QGIS_INCLUDE_DIR = $${QGIS_INSTALL_PATH}/include
 
-exists($${QGIS_LIB_DIR}/libqgis_core.so) {
-  message("Building from QGIS: $${QGIS_INSTALL_PATH}")
-} else {
-  error("Missing QGIS Core library in $${QGIS_LIB_DIR}/libqgis_core.so")
+# Mac specific includes/libraries paths
+mac {
+  QGIS_QML_DIR = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/qml
+  QGIS_PREFIX_PATH = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS
+
+  QGIS_QUICK_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/lib/qgis_quick.framework
+  QGIS_NATIVE_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks/qgis_native.framework
+  QGIS_CORE_FRAMEWORK = $${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks/qgis_core.framework
+
+  exists($${QGIS_CORE_FRAMEWORK}/qgis_core) {
+    message("Building from QGIS: $${QGIS_INSTALL_PATH}")
+  } else {
+    error("Missing qgis_core Framework in $${QGIS_CORE_FRAMEWORK}/qgis_core")
+  }
+
+  INCLUDEPATH += \
+    $${QGIS_QUICK_FRAMEWORK}/Headers \
+    $${QGIS_NATIVE_FRAMEWORK}/Headers \
+    $${QGIS_CORE_FRAMEWORK}/Headers
+
+  LIBS += -F$${QGIS_INSTALL_PATH}/QGIS.app/Contents/MacOS/lib  \
+          -F$${QGIS_INSTALL_PATH}/QGIS.app/Contents/Frameworks
+
+  LIBS += -framework qgis_quick \
+          -framework qgis_native \
+          -framework qgis_core
 }
 
-INCLUDEPATH += \
-  $${QGIS_INCLUDE_DIR}/qgis \
-  $${QGIS_INCLUDE_DIR}
+# Linux+Android specific includes/libraries paths
+!mac {
+  QGIS_PREFIX_PATH = $${QGIS_INSTALL_PATH}
+  QGIS_LIB_DIR = $${QGIS_INSTALL_PATH}/lib
+  QGIS_INCLUDE_DIR = $${QGIS_INSTALL_PATH}/include
+  QGIS_QML_DIR = $${QGIS_INSTALL_PATH}/qml
+  QT_LIBS_DIR = $$dirname(QMAKE_QMAKE)/../lib
 
-LIBS += -L$${QGIS_LIB_DIR}
-LIBS += -lqgis_core -lqgis_quick
+  exists($${QGIS_LIB_DIR}/libqgis_core.so) {
+    message("Building from QGIS: $${QGIS_INSTALL_PATH}")
+  } else {
+    error("Missing QGIS Core library in $${QGIS_LIB_DIR}/libqgis_core.so")
+  }
 
+
+  INCLUDEPATH += \
+    $${QGIS_INCLUDE_DIR}/qgis \
+    $${QGIS_INCLUDE_DIR}
+
+  LIBS += -L$${QGIS_LIB_DIR}
+  LIBS += -lqgis_core -lqgis_quick
+}
+
+################
 DEFINES += "CORE_EXPORT="
 DEFINES += "QUICK_EXPORT="
-!android {
-  DEFINES += "QGIS_QUICK_DATA_PATH=$${QGIS_QUICK_DATA_PATH}"
-  DEFINES += "QGIS_PREFIX_PATH=$${QGIS_INSTALL_PATH}"
+DEFINES += "QGIS_QUICK_DATA_PATH=$${QGIS_QUICK_DATA_PATH}"
+
+CONFIG(debug, debug|release) {
+  DEFINES += "QGIS_PREFIX_PATH=$${QGIS_PREFIX_PATH}"
+  DEFINES += "QGIS_QUICK_EXPAND_TEST_DATA"
 }
 
 QT += qml quick xml concurrent positioning quickcontrols2
 QT += network svg printsupport sql
 QT += opengl
-  
 
-SOURCES += main.cpp
-HEADERS += 
 
-RESOURCES += qml.qrc
+SOURCES += \
+main.cpp \
+
+RESOURCES += \
+    qml.qrc
+
+TRANSLATIONS +=
 
 lupdate_only {
     SOURCES += *.qml
@@ -91,7 +131,6 @@ ANDROID_EXTRA_LIBS += \
     $$QT_LIBS_DIR/libQt5PrintSupport.so \
     $$QT_LIBS_DIR/libQt5Sensors.so \
     $$QT_LIBS_DIR/libQt5Sql.so \
-    $$QT_LIBS_DIR/libQt5Script.so \
     $$QT_LIBS_DIR/libQt5Svg.so \
     $$QT_LIBS_DIR/libQt5AndroidExtras.so
 
