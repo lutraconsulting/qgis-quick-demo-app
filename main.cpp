@@ -91,6 +91,7 @@ static void init_qgis()
 
     QStringList qgisDataFiles;
     qgisDataFiles << "resources/qgis.db" << "resources/srs.db";
+    qgisDataFiles << "icons/plane.svg" << "icons/transport_airport.svg" << "icons/transport_airport2.svg";
     qgisDataFiles << "bg.tif";
     qgisDataFiles << "lines.shp" << "lines.dbf" << "lines.prj" << "lines.shx";
     qgisDataFiles << "points.shp" << "points.dbf" << "points.prj" << "points.shx";
@@ -143,11 +144,17 @@ int main( int argc, char *argv[] )
   QCoreApplication::setApplicationVersion( "1.0" );
 
   // 2) Load QGIS Project
-#ifdef QGIS_QUICK_DATA_PATH
-  QString dataDir( STR(QGIS_QUICK_DATA_PATH) );
+
+#ifdef ANDROID
+  QString dataDir( QgsApplication::pkgDataPath() );
 #else
-  QString dataDir( ::getenv( "QGIS_QUICK_DATA_PATH" ) );
+    #ifdef QGIS_QUICK_DATA_PATH
+      QString dataDir( STR(QGIS_QUICK_DATA_PATH) );
+    #else
+      QString dataDir( ::getenv( "QGIS_QUICK_DATA_PATH" ) );
+    #endif
 #endif
+
   QString projectFile = dataDir + "/test_project.qgs";
   qDebug() << "project file: " << projectFile;
   QgsProject project;
