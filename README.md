@@ -1,6 +1,7 @@
 # qgis-quick-demo-app
 Android GIS application with usage of QgsQuick.  
 
+for iOS application, see https://github.com/lutraconsulting/qgis-quick-demo-app-ios
 
 # Building on Linux
 
